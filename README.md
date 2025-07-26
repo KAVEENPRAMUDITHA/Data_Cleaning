@@ -3,8 +3,6 @@
 Directory structure:
 └── kaveenpramuditha-model-deployment-with-streamlit/
     ├── README.md
-    ├── app.py
-    ├── model.pkl
     ├── requirements.txt
     ├── data/
     │   ├── Boston.csv
