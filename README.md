@@ -1,4 +1,4 @@
-# Model-Deployment-with-Streamlit
+# Data Cleaning
 ```
 Directory structure:
 └── kaveenpramuditha-model-deployment-with-streamlit/
