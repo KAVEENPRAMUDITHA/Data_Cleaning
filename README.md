@@ -1,5 +1,5 @@
 # Model-Deployment-with-Streamlit
-
+```
 Directory structure:
 └── kaveenpramuditha-model-deployment-with-streamlit/
     ├── README.md
@@ -11,11 +11,14 @@ Directory structure:
     │   └── Boston_cleaned.csv
     └── notebooks/
         └── model_training.ipynb
-
+```
+```
 ================================================
 FILE: requirements.txt
 ================================================
-pandas
+```
+```
+ pandas
 numpy
 matplotlib
 seaborn
