@@ -1,138 +1,74 @@
-# Data Cleaning
+# Hotel Booking Data Cleaning Project
+
+This project focuses on cleaning a hotel booking dataset. The primary goal is to preprocess the raw data to make it suitable for exploratory data analysis and machine learning modeling. The entire cleaning process is documented in the `notebooks/data_cleaning_process.ipynb` Jupyter Notebook.
+
+## Project Structure
+
 ```
-Directory structure:
-└── kaveenpramuditha-model-deployment-with-streamlit/
-    ├── README.md
-    ├── requirements.txt
-    ├── data/
-    │   ├── Boston.csv
-    │   └── Boston_cleaned.csv
-    └── notebooks/
-        └── model_training.ipynb
+.
+├── data/
+│   ├── hotel_bookings.csv         
+│   └── hotel_bookings_cleaned.csv 
+├── notebooks/
+│   └── data_cleaning_process.ipynb 
+├── requirements.txt               
+└── README.md                      
 ```
-```
-================================================
-FILE: requirements.txt
-================================================
-```
-```
- pandas
-numpy
-matplotlib
-seaborn
-scikit-learn
-streamlit
 
-================================================
-FILE: notebooks/model_training.ipynb
-================================================
-# Jupyter notebook converted to Python script.
+## Data Cleaning Process
 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import streamlit as st
-import sklearn as sk
+The data cleaning process was divided into three main phases:
 
-# Load the data
-df = pd.read_csv('../data/Boston.csv')
+### Phase 1: Data Exploration and Assessment
 
-#  Shape of dataset 
-print(df.shape)
+1.  **Initial Data Inspection**: The dataset was loaded and examined to understand its structure, including the number of rows and columns, data types, and a statistical summary of the numerical features.
+2.  **Missing Value Analysis**: A systematic check for missing values was performed. The columns `country`, `agent`, and `company` were identified as having missing data. A heatmap was used to visualize the missing data patterns.
+3.  **Data Quality Assessment**:
+    *   **Duplicate Records**: The dataset was checked for duplicate rows.
+    *   **Outlier Detection**: Boxplots were used to identify potential outliers in numerical columns like `lead_time` and `adr`.
+    *   **Inconsistency Checks**: Categorical columns were examined for inconsistent values, and the dataset was checked for illogical data entries (e.g., bookings with zero adults, children, and babies).
 
-# Column data types
-print(df.dtypes)
+### Phase 2: Data Cleaning Implementation
 
-# First and last 5 rows
-print(df.head())
-print(df.tail())
+1.  **Handling Missing Values**:
+    *   `children`: Missing values were filled with `0`.
+    *   `country`: Missing values were imputed using the mode (most frequent value).
+    *   `agent` and `company`: Missing values were replaced with `0`, indicating no agent or company was involved. The data types for these columns were converted to `int`.
+2.  **Duplicate Removal**: Exact duplicate rows were removed from the dataset.
+3.  **Outlier Treatment**: Outliers in numerical columns were capped using the Interquartile Range (IQR) method to minimize their impact on analysis.
+4.  **Fixing Inconsistencies**:
+    *   Country codes were standardized to uppercase.
+    *   The `reservation_status_date` was converted to a proper datetime format.
+    *   Rows with illogical data, such as bookings with zero guests that resulted in a "Check-Out", were removed.
 
-#  Stat summary
-print(df.describe())
+### Phase 3: Data Validation and Documentation
 
+1.  **Validation Checks**: The cleaned dataset was validated to ensure that the cleaning steps were successful. This included verifying that there were no bookings with zero guests and that numerical values were within logical ranges.
+2.  **Final Dataset**: The cleaned dataset was saved to `data/hotel_bookings_cleaned.csv`.
 
-# Find missing values
-missing = df.isnull().sum()
-missing = missing[missing > 0]
-print(missing)
+## Feature Engineering
 
-# Percentage of missing values
-missing_percent = (missing / len(df)) * 100
-print(missing_percent)
+To enhance the dataset for future analysis, several new features were created:
 
-# Visualize using heatmap
-sns.heatmap(df.isnull(), cbar=False)
-plt.title("Missing Data Heatmap")
-plt.show()
+*   `total_nights`: The total number of nights stayed (weekend + week nights).
+*   `total_guests`: The total number of guests (adults + children + babies).
+*   `is_modified`: A binary flag indicating if the booking was modified.
+*   `is_high_season`: A binary flag for bookings made in July or August.
+*   `arrival_day_of_week`: The day of the week of the arrival date.
+*   `booking_revenue`: An estimated revenue for each booking, calculated as `total_nights * adr`.
 
-# Output:
-#   Series([], dtype: int64)
+## Automated Cleaning Pipeline
 
-#   Series([], dtype: float64)
+For reusability, the key cleaning steps were encapsulated into functions to create an automated cleaning pipeline. This allows for the same cleaning process to be easily applied to new data.
 
-#   <Figure size 640x480 with 1 Axes>
+## How to Run
 
-duplicates = df.duplicated()
-print("Number of exact duplicates:", duplicates.sum())
-
-
-
-# Output:
-#   Number of exact duplicates: 0
-
-
-# Use describe to spot strange values
-print(df[['AGE', 'TAX', 'DIS',]].describe())
-
-# Optional: visual boxplot
-sns.boxplot(x=df['AGE'])
-plt.title("Boxplot of AGE")
-plt.show()
-
-
-
-# Check if any rows have all guests as 0
-guest_zeros = df[(df['AGE'] == 0) & (df['INDUS'] == 0) & (df['TAX'] == 0)]
-print("Rows where all guests are 0:", guest_zeros.shape[0])
-
-# Output:
-#   Rows where all guests are 0: 0
-
-
-"""
-**Data Cleaning Implementation**
-"""
-
-# Check duplicates
-duplicates = df.duplicated()
-print("Number of exact duplicate rows:", duplicates.sum())
-
-# Drop duplicates if found
-df = df.drop_duplicates()
-print("Shape after removing duplicates:", df.shape)
-
-# Output:
-#   Number of exact duplicate rows: 0
-
-#   Shape after removing duplicates: (506, 14)
-
-
-def remove_outliers_iqr(df, column):
-    Q1 = df[column].quantile(0.25)
-    Q3 = df[column].quantile(0.75)
-    IQR = Q3 - Q1
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
-    original = df.shape[0]
-    df_cleaned = df[(df[column] >= lower) & (df[column] <= upper)]
-    print(f"{column}: Removed {original - df_cleaned.shape[0]} outliers")
-    return df_cleaned
-
-
-# (crime rate)
-df = remove_outliers_iqr(df, 'CRIM')
-
-# Apply to others if needed
-for col in ['ZN', 'INDUS', 'RM', 'AGE', 'DIS', 'TAX', 'PTRATIO', 'LSTAT', 'MEDV']:
-    df = remove_outliers_iqr(df, col)
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/KAVEENPRAMUDITHA/Data_Cleaning.git
+    ```
+2.  Install the required dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  Open and run the Jupyter Notebook `notebooks/data_cleaning_process.ipynb` to see the full data cleaning process.
